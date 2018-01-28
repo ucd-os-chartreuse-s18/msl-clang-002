@@ -63,7 +63,7 @@ rb_find(const struct rb_node *tree, const struct rb_node *node);
  * @note If the expectations of this function are violated, it silently fails.
  */
 void
-rb_left_rotate(struct rb_node *tree, const struct rb_node *node);
+rb_left_rotate(struct rb_node *tree, struct rb_node *node);
 
 /**
  * @brief Performs a right rotation.
@@ -82,7 +82,7 @@ rb_left_rotate(struct rb_node *tree, const struct rb_node *node);
  * @note If the expectations of this function are violated, it silently fails.
  */
 void
-rb_right_rotate(struct rb_node *tree, const struct rb_node *node);
+rb_right_rotate(struct rb_node *tree, struct rb_node *node);
 
 /**
  * @brief Inserts a new node into the tree.
@@ -97,7 +97,7 @@ rb_right_rotate(struct rb_node *tree, const struct rb_node *node);
  * @return A pointer to the inserted node, or NULL, if duplicate.
  */
 struct rb_node *
-rb_insert(struct rb_node *tree, const struct rb_node *node);
+rb_insert(struct rb_node *tree, struct rb_node *node);
 
 /**
  * @brief Restores RB properties after an insert.
@@ -112,7 +112,7 @@ rb_insert(struct rb_node *tree, const struct rb_node *node);
  * @param node Successfully inserted node.
  */
 void
-rb_restore_after_insert(struct rb_node *tree, const struct rb_node *node);
+rb_restore_after_insert(struct rb_node *tree, struct rb_node *node);
 
 /**
  * @brief Finds the minimum element of the tree.
@@ -142,7 +142,7 @@ rb_min(struct rb_node *tree);
  * @note The caller is responsible for updating new_root's children.
  */
 void
-rb_transplant(struct rb_node *tree, struct rb_node *old_root, const struct rb_node *new_root);
+rb_transplant(struct rb_node *tree, struct rb_node *old_root, struct rb_node *new_root);
 
 /**
  * @brief Delete a node from a tree.
