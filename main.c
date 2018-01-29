@@ -29,7 +29,9 @@ int main(int argc, char *argv[]) {
     }
     
     typedef struct rb_node Tree, Node;
-    Tree tree  = {NULL}; //Tree* tree = (Tree *) malloc(sizeof(Tree));
+    //Tree tree  = {NULL}; /* this would be ok, except it can't be freed */
+    Tree* tree = (Tree *) malloc(sizeof(Tree));
+    tree->word = NULL;
     Node input = {NULL}; //Node* input = (Node *) malloc(sizeof(Node));
     
     /*
@@ -41,19 +43,36 @@ int main(int argc, char *argv[]) {
      * that will only last for a single loop iteration.
      */
     while (fscanf(in, "%s", buff) != EOF) {
-        input.word = (char *) malloc(sizeof(char) * strlen(buff) + 1);
-        strcpy(input.word, buff); // would need to free this
-        //input.word = buff;
-        rb_insert(&tree, &input);
+        //input.word = (char *) malloc(sizeof(char) * strlen(buff) + 1);
+        //strcpy(input.word, buff); // would need to free this
+        input.word = buff;
+        rb_insert(tree, &input);
     }
     
-    // Test finding the min
+    // Test rb_min
     //struct rb_node *min = rb_min(&tree);
     //printf("min : %s\n", min->word);
     
+    // Test rb_find
+    /*
+    char *str_arr[5] = {"this", "is", "a", "pirate's", "sword"};
+    for (int i = 0; i < 5; i++) {
+        input.word = str_arr[i];
+        if (rb_find(&tree, &input)->word == NULL) {
+            printf("\"%s\" was not found in the file.\n", str_arr[i]);
+        } else {
+            printf("\"%s\" was found in the file.\n", str_arr[i]);
+        }
+    } */
+    
+    input.word = "ho"; // doesn't work for root: "yo"
+    //printf("root before %p:%s\n", tree, tree->word);
+    rb_delete(tree, &input);
+    //printf("root after %p:%s\n", tree, tree->word);
+    
     // Inserting into a tree automatically sorts, so now we can print.
     FILE *out = fopen("./program_output.txt", "w");
-    writeInorder(&tree, out);
+    writeInorder(tree, out);
     
     // Cleanup
     fclose(in);

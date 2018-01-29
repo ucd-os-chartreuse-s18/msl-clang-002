@@ -172,3 +172,17 @@ void
 rb_restore_after_delete(struct rb_node *tree, struct rb_node *orphan);
 
 #endif //RB_TREE_H
+
+
+// TODO
+/*
+node rb_find                    complete
+void rb_left_rotate
+void rb_right_rotate
+node rb_insert
+void rb_restore_after_insert
+node rb_min
+void rb_transplant
+node rb_delete
+void rb_restore_after_delete
+*/

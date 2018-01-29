@@ -36,13 +36,13 @@ rb_find(const struct rb_node *tree, const struct rb_node *node) {
     
     if (strcmp(node->word, tree->word) < 0) {
         if (tree->left == &RB_NULL) { // NOT FOUND
-            return (struct rb_node *) &RB_NULL;
+            return &RB_NULL;
         } else { // continue left
             return rb_find(tree->left, node);
         }
     } else if (strcmp(node->word, tree->word) > 0) {
         if (tree->right == &RB_NULL) { // NOT FOUND
-            return (struct rb_node *) &RB_NULL;
+            return &RB_NULL;
         } else { // continue right
             return rb_find(tree->right, node);
         }
@@ -67,7 +67,7 @@ rb_find(const struct rb_node *tree, const struct rb_node *node) {
  * @note If the expectations of this function are violated, it silently fails.
  */
 void
-rb_left_rotate(struct rb_node *tree, const struct rb_node *x) {
+rb_left_rotate(struct rb_node *tree, struct rb_node *x) {
 
     /*
     T1, T2 and T3 are subtrees.
@@ -104,7 +104,7 @@ rb_left_rotate(struct rb_node *tree, const struct rb_node *x) {
  * @note If the expectations of this function are violated, it silently fails.
  */
 void
-rb_right_rotate(const struct rb_node *tree, const struct rb_node *y) {
+rb_right_rotate(struct rb_node *tree, struct rb_node *y) {
     
     /*
     T1, T2 and T3 are subtrees.
@@ -119,9 +119,9 @@ rb_right_rotate(const struct rb_node *tree, const struct rb_node *y) {
     // parameter "tree" is not used and I don't know why it is included
     struct rb_node *x = y->left;
     x->parent = y->parent;
-    ((struct rb_node *) y)->left = x->right;
-    x->right = (struct rb_node *) y;
-    ((struct rb_node *) y)->parent = x;
+    y->left = x->right;
+    x->right = y;
+    y->parent = x;
 }
 
 /**
@@ -153,17 +153,24 @@ rb_right_rotate(const struct rb_node *tree, const struct rb_node *y) {
 //  const struct must be cast to a non-const
 //  DEBUG print node: printf("NODE %p:%s\n", node, node->word);
 struct rb_node *
-rb_insert(const struct rb_node *node, const struct rb_node *item) {
+rb_insert(struct rb_node *node, struct rb_node *item) {
     
-    /* ROOT CASE */
+    /* ROOT CASE
+     * node->word == NULL means node is the root
+     * and that it hasn't been inserted into yet
+     * (it is possible that node->word is garbage,
+     * but it is up to the user to assert that's
+     * not the case)
+     * */
     if (node->word == NULL) {
         /* deep copy that dynamically allocates node->word */
-        ((Node *) node)->word = (char*) malloc(sizeof(char) * (strlen(item->word) + 1));
+        node->word = (char*) malloc(sizeof(char) * (strlen(item->word) + 1));
         strcpy(node->word, item->word);
-        ((Node *) node)->count = 1;
-        ((Node *) node)->left = (Node *) &RB_NULL;
-        ((Node *) node)->right = (Node *) &RB_NULL;
-        return (Node *) node;
+        node->count  = 1;
+        node->left   = &RB_NULL;
+        node->right  = &RB_NULL;
+        node->parent = &RB_NULL;
+        return node;
     }
     
     /*
@@ -190,7 +197,8 @@ rb_insert(const struct rb_node *node, const struct rb_node *item) {
             tmp->word = (char*) malloc(sizeof(char) * (strlen(item->word) + 1));
             strcpy(tmp->word, item->word);
             tmp->count = 1;
-            ((Node *) node)->left = tmp;
+            node->left = tmp;
+            tmp->parent = node;
             
             /*
              * ((Node *) node)->left = item;
@@ -216,25 +224,26 @@ rb_insert(const struct rb_node *node, const struct rb_node *item) {
         if (node->right == &RB_NULL) {
             
             Node *tmp = malloc(sizeof(Node));
-            tmp->left  = (Node *) &RB_NULL;
-            tmp->right = (Node *) &RB_NULL;
+            tmp->left  = &RB_NULL;
+            tmp->right = &RB_NULL;
             
             /* deep copy that dynamically allocates node->word */
             tmp->word = (char*) malloc(sizeof(char) * (strlen(item->word) + 1));
             strcpy(tmp->word, item->word);
             tmp->count = 1;
-            ((Node *) node)->right = tmp;
+            node->right = tmp;
+            tmp->parent = node;
             
         } else {
             rb_insert(node->right, item);
         }
     } else { /* found the same word */
-        ((Node *) node)->count += 1;
+        node->count += 1;
     }
     
     //TODO call fixup method and set color to red
     
-    return (Node *) node;
+    return node;
 }
 
 /**
@@ -250,8 +259,7 @@ rb_insert(const struct rb_node *node, const struct rb_node *item) {
  * @param node Successfully inserted node.
  */
 void
-rb_restore_after_insert(const struct rb_node *tree, const struct rb_node *node) {
-
+rb_restore_after_insert(struct rb_node *tree, struct rb_node *node) {
 
 }
 
@@ -268,15 +276,15 @@ rb_restore_after_insert(const struct rb_node *tree, const struct rb_node *node) 
 // This min was taken from a BS_Tree implementation I previously coded.
 // Works, but might need to show how in comments?
 struct rb_node *
-rb_min(const struct rb_node *tree) {
+rb_min(struct rb_node *tree) {
     struct rb_node *tmp;
-    tmp = (struct rb_node *) tree;
+    tmp = tree;
     if (tree == &RB_NULL) {
-        tmp = (struct rb_node *) &RB_NULL;
+        tmp = &RB_NULL;
     } else if (tree->left != &RB_NULL) {
         tmp = rb_min(tree->left);
     } else {
-        tmp = (struct rb_node *) tree;
+        tmp = tree;
     }
     return tmp;
 }
@@ -297,8 +305,7 @@ rb_min(const struct rb_node *tree) {
  * @note The caller is responsible for updating new_root's children.
  */
 void
-rb_transplant(const struct rb_node *tree, struct rb_node *old_root, const struct rb_node *new_root) {
-
+rb_transplant(struct rb_node *tree, struct rb_node *old_root, struct rb_node *new_root) {
 
 }
 
@@ -313,50 +320,56 @@ rb_transplant(const struct rb_node *tree, struct rb_node *old_root, const struct
  * @return A pointer to the deleted node, or NULL, if not found.
  * @note The caller is responsible for freeing the deleted node.
  */
+// TODO maintain parent info
+// TODO make sure tree->word is freed
+// IMPORTANT:
+//  rb_delete works to delete everything EXCEPT for the head
+//  node. The head cannot be deleted because the address is
+//  passed by value. I could fix this if I passed a pointer
+//  to the pointer, but I shouldn't change the API.
+//  If I can differentiate between the other nodes and the root
+//  pointer, maybe I can invoke the rb_delete method again to try
+//  to change it indirectly.
 struct rb_node *
 rb_delete(struct rb_node *tree, struct rb_node *node) {
+    
     if (tree == &RB_NULL) {
-        return (struct rb_node *) &RB_NULL;
+        return &RB_NULL;
     } else if (strcmp(node->word, tree->word) < 0) {
         tree->left = rb_delete(tree->left, node);
     } else if (strcmp(node->word, tree->word) > 0) {
         tree->right = rb_delete(tree->right, node);
-    } else {
-        if (node->left == &RB_NULL && node->right == &RB_NULL) {
+    } else { // The node to delete is found
+        
+        /* DETECT ROOT */
+        //if (tree->parent == &RB_NULL) rb_delete(tree, &RB_NULL);
+        
+        if (tree->left == &RB_NULL && tree->right == &RB_NULL) { // no children
             free(tree);
             tree = &RB_NULL;
+        } else if (tree->left == &RB_NULL) { // one child
+            struct rb_node *tmp = tree;
+            tree = tree->right;
+            free(tmp);
+        } else if (tree->right == &RB_NULL) { // one child
+            struct rb_node *tmp = tree;
+            tree = tree->left;
+            free(tmp);
+        } else { //both children
+            // FROM THE SOURCE I LOOKED AT, tmp->word WOULD HAVE BEEN A CONST REFERENCE
+            // I DO NOT CURRENTLY KNOW IF A DEEP COPY IS NEEDED
+            struct rb_node *tmp = rb_min(tree->right);
+            tree->word = tmp->word;
+            tree->count = tmp->count;
+            tree->right = rb_delete(tree->right, tmp);
+            /*
+            Node* tmp = min(node->right);
+            node->data = tmp->data;
+            node->right = removeNode(node->right, tmp->data); */
         }
     }
-    return NULL;
+    return tree;
 }
-/*
-
-	static NodeRef removeNode(NodeRef node, const T &data) {
-		if (node == nullptr) return node;
-		else if (data < node->data)
-			node->left = removeNode(node->left, data);
-		else if (data > node->data)
-			node->right = removeNode(node->right, data);
-		else {
-			if (node->left == nullptr && node->right == nullptr) {
-				delete node;
-				node = nullptr;
-			} else if (node->left == nullptr) { //one child
-				NodeRef tmp = node;
-				node = node->right;
-				delete tmp;
-			} else if (node->right == nullptr) { //one child
-				NodeRef tmp = node;
-				node = node->left;
-				delete tmp;
-			} else { //both children
-				NodeRef tmp = min(node->right);
-				node->data = tmp->data;
-				node->right = removeNode(node->right, tmp->data);
-			}
-		} return node;
-	}
-*/
 
 /**
  * @brief Restores RB properties after a delete.
@@ -369,7 +382,6 @@ rb_delete(struct rb_node *tree, struct rb_node *node) {
  * @param orphan The node whose parent was deleted.
  */
 void
-rb_restore_after_delete(const struct rb_node *tree, struct rb_node *orphan) {
-
+rb_restore_after_delete(struct rb_node *tree, struct rb_node *orphan) {
 
 }
